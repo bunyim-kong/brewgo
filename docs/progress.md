@@ -24,6 +24,8 @@ The landing photograph was made with built-in ImageGen and saved as `front-end/s
 - A valid pay-on-pickup order will start as `CONFIRMED` with payment `PENDING`. The barista will see the order and its requested pickup time immediately. Checkout and the barista queue are future milestones.
 - The planned handoff rule requires a cashier to verify payment before an order is completed.
 - The public catalog is shared across the demo. An optional branch filter validates that the branch is active.
+- API routes use the unversioned `/api` prefix.
+- Administrators can create, list, update, and disable products through the API. Updates to price or currency are recorded with the administrator who made the change.
 
 ## Acceptance checklist
 
@@ -45,5 +47,5 @@ The landing photograph was made with built-in ImageGen and saved as `front-end/s
 | AT-14 | Pending | Implement cancellation with reasons and an immutable terminal state. |
 | AT-15 | Partial | Browser checks verified the landing page and menu at 360 px. Full mobile checkout remains pending. |
 | AT-16 | Pending | Add SSE, snapshot refresh, and polling fallback. |
-| AT-17 | Pending | Add admin availability controls and validate them during checkout. |
+| AT-17 | Partial | Admin API can disable products and the public catalog filters them out. Admin screens and checkout validation remain pending. |
 | AT-18 | Pending | Add reporting based on verified payments. |

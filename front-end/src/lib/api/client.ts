@@ -1,3 +1,5 @@
+const API_ROOT = '/api'
+
 export class ApiError extends Error {
   readonly status: number
 
@@ -8,7 +10,7 @@ export class ApiError extends Error {
 }
 
 async function request(path: string, options?: RequestInit) {
-  const response = await fetch(`/api/v1${path}`, options)
+  const response = await fetch(`${API_ROOT}${path}`, options)
   if (!response.ok) {
     throw new ApiError(response.status, 'The request could not be completed.')
   }
@@ -23,7 +25,7 @@ export async function getJson<T>(
 }
 
 export async function postForm(path: string, fields?: Record<string, string>) {
-  const session = await fetch('/api/v1/auth/me')
+  const session = await fetch(`${API_ROOT}/auth/me`)
   const token = session.headers.get('X-CSRF-TOKEN')
   if (!token)
     throw new ApiError(

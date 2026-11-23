@@ -1,11 +1,14 @@
 package com.example.back_end.Repository;
 
 import com.example.back_end.Model.Product;
+import com.example.back_end.Model.dto.AdminProduct;
 import com.example.back_end.Model.dto.ProductSummary;
+import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -29,4 +32,22 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query(VISIBLE_PRODUCTS + " AND p.id = :id")
     Optional<ProductSummary> findVisibleById(long id);
+
+    String ADMIN_PRODUCTS = """
+            SELECT new com.example.back_end.Model.dto.AdminProduct(
+                p.id, p.category.id, p.name, p.slug, p.description, p.allergens, p.imageUrl,
+                p.basePrice, p.currency, p.active
+            )
+            FROM Product p
+            """;
+
+    @Query(ADMIN_PRODUCTS + " ORDER BY p.name, p.id")
+    Page<AdminProduct> findAdminProducts(Pageable page);
+
+    @Query(ADMIN_PRODUCTS + " WHERE p.id = :id")
+    Optional<AdminProduct> findAdminById(long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.id = :id")
+    Optional<Product> findForUpdate(long id);
 }

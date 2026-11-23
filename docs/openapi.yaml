@@ -3,7 +3,7 @@ info:
   title: BrewGo API
   version: 0.1.0
 servers:
-  - url: /api/v1
+  - url: /api
 paths:
   /branches:
     get:
@@ -78,6 +78,98 @@ paths:
                 $ref: '#/components/schemas/Product'
         '404':
           description: Product is unavailable
+  /admin/products:
+    get:
+      operationId: listAdminProducts
+      security: [{ staffSession: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 0, maximum: 100000, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 24 }
+      responses:
+        '200':
+          description: Product page including disabled products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProductPage'
+        '401': { description: Staff sign-in required }
+        '403': { description: Administrator access required }
+    post:
+      operationId: createProduct
+      security: [{ staffSession: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+            example: { categoryId: 1, name: Vanilla Cold Brew, slug: vanilla-cold-brew, basePrice: '3.50' }
+      responses:
+        '201':
+          description: Product created
+          headers:
+            Location:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProduct'
+        '400': { description: Invalid product fields }
+        '403': { description: Administrator access and a CSRF token are required }
+        '409': { description: Product slug already in use }
+        '422': { description: Invalid category, currency or image URL }
+  /admin/products/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, format: int64, minimum: 1 }
+    get:
+      operationId: getAdminProduct
+      security: [{ staffSession: [] }]
+      responses:
+        '200':
+          $ref: '#/components/responses/AdminProduct'
+        '401': { description: Staff sign-in required }
+        '403': { description: Administrator access required }
+        '404': { description: Product does not exist }
+    patch:
+      operationId: updateProduct
+      description: Omitted or null fields retain their values. Use an empty string to clear the description, allergens or image URL.
+      security: [{ staffSession: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+            example: { basePrice: '3.75', active: true }
+      responses:
+        '200':
+          $ref: '#/components/responses/AdminProduct'
+        '400': { description: Invalid product fields }
+        '403': { description: Administrator access and a CSRF token are required }
+        '404': { description: Product does not exist }
+        '409': { description: Product slug already in use }
+        '422': { description: Invalid name, category, currency or image URL }
+    delete:
+      operationId: deleteProduct
+      description: Disable the product and preserve references from past orders.
+      security: [{ staffSession: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '204': { description: Product disabled }
+        '403': { description: Administrator access and a CSRF token are required }
+        '404': { description: Product does not exist }
   /auth/login:
     post:
       operationId: staffLogin
@@ -132,6 +224,13 @@ paths:
         '403':
           description: Invalid or missing CSRF token
 components:
+  responses:
+    AdminProduct:
+      description: Product with its availability status
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AdminProduct'
   securitySchemes:
     staffSession:
       type: apiKey
@@ -189,6 +288,49 @@ components:
         page: { type: integer }
         totalPages: { type: integer }
         totalItems: { type: integer, format: int64 }
+    AdminProduct:
+      allOf:
+        - $ref: '#/components/schemas/Product'
+        - type: object
+          required: [active]
+          properties:
+            active: { type: boolean }
+    AdminProductPage:
+      allOf:
+        - $ref: '#/components/schemas/ProductPage'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/AdminProduct'
+    ProductInput:
+      type: object
+      properties:
+        categoryId: { type: [integer, 'null'], format: int64, minimum: 1 }
+        name: { type: [string, 'null'], maxLength: 160 }
+        slug: { type: [string, 'null'], maxLength: 180, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' }
+        description: { type: [string, 'null'], maxLength: 16000 }
+        allergens: { type: [string, 'null'], maxLength: 255 }
+        imageUrl: { type: [string, 'null'], maxLength: 1024 }
+        basePrice:
+          description: Nonnegative decimal with up to 8 whole digits and 2 decimal places
+          type: [string, number, 'null']
+          example: '3.50'
+        currency: { type: [string, 'null'], pattern: '^[A-Z]{3}$', example: USD }
+        active: { type: [boolean, 'null'] }
+    ProductCreate:
+      allOf:
+        - $ref: '#/components/schemas/ProductInput'
+        - type: object
+          required: [categoryId, name, slug, basePrice]
+          properties:
+            categoryId: { type: integer }
+            name: { type: string, minLength: 1 }
+            slug: { type: string }
+            basePrice: { type: [string, number] }
+            currency: { default: USD }
+            active: { default: true }
     Staff:
       type: object
       required: [id, name, role, branchId]

@@ -14,7 +14,7 @@ class BranchController {
         this.branches = branches;
     }
 
-    @GetMapping("/api/v1/branches")
+    @GetMapping("/api/branches")
     List<BranchSummary> branches() {
         return branches.listActiveBranches();
     }

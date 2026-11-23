@@ -15,8 +15,8 @@ class DemoStaffSetup {
     @Bean
     ApplicationRunner demoAdmin(
             JdbcClient jdbc, PasswordEncoder encoder,
-            @Value("${brewgo.demo.admin.email:}") String email,
-            @Value("${brewgo.demo.admin.password:}") String password
+            @Value("${brewgo.demo.admin.email:${BREWGO_DEMO_ADMIN_EMAIL:}}") String email,
+            @Value("${brewgo.demo.admin.password:${BREWGO_DEMO_ADMIN_PASSWORD:}}") String password
     ) {
         return args -> {
             if (email.isBlank() && password.isEmpty()) {

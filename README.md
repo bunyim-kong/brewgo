@@ -34,7 +34,18 @@ npm run dev
 
 Vite forwards `/api` to `http://localhost:8080`. Set `BREWGO_API_ORIGIN` in the frontend process if the backend uses a different origin.
 
-Try `GET /api/v1/products?q=latte` on port 5173 to search the demo catalog through the API.
+Try `GET /api/products?q=latte` on port 5173 to search the demo catalog through the API.
+
+### Test the API in Postman
+
+Use `http://localhost:8080` as the base URL. `GET /api/branches` and `GET /api/products` are public. The admin product API requires an admin session.
+
+1. Set the demo admin email and password in `.env` and start the backend to create the account if needed.
+2. Send `GET /api/auth/me`. Before sign-in, the expected response is **401** with an `X-CSRF-TOKEN` response header and a session cookie.
+3. Send `POST /api/auth/login` with that `X-CSRF-TOKEN` header and `email` and `password` in an **x-www-form-urlencoded** body. A successful login returns **204**. Keep Postman's cookie jar enabled and use the same host throughout.
+4. Send `GET /api/admin/products`. For an admin write, fetch a fresh token from `GET /api/auth/me` and include it as `X-CSRF-TOKEN`.
+
+The [API contract](docs/openapi.yaml) includes create and update examples.
 
 ## Structure
 

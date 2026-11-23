@@ -23,10 +23,10 @@ class SecurityConfiguration {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/v1/branches", "/api/v1/categories",
-                                "/api/v1/products", "/api/v1/products/*", "/api/v1/auth/me").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/staff/**").hasAnyRole("CASHIER", "BARISTA", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/branches", "/api/categories",
+                                "/api/products", "/api/products/*", "/api/auth/me").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/staff/**").hasAnyRole("CASHIER", "BARISTA", "ADMIN")
                         .anyRequest().denyAll())
                 .exceptionHandling(errors -> errors.authenticationEntryPoint(
                         (request, response, exception) -> response.setStatus(HttpServletResponse.SC_UNAUTHORIZED))
@@ -35,14 +35,14 @@ class SecurityConfiguration {
                 .requestCache(AbstractHttpConfigurer::disable)
                 .formLogin(form -> form
                         .loginPage("/staff/login")
-                        .loginProcessingUrl("/api/v1/auth/login")
+                        .loginProcessingUrl("/api/auth/login")
                         .usernameParameter("email")
                         .successHandler((request, response, authentication) ->
                                 response.setStatus(HttpServletResponse.SC_NO_CONTENT))
                         .failureHandler((request, response, exception) ->
                                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)))
                 .logout(logout -> logout
-                        .logoutUrl("/api/v1/auth/logout")
+                        .logoutUrl("/api/auth/logout")
                         .deleteCookies("JSESSIONID")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
                 .build();
