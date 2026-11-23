@@ -1,10 +1,10 @@
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import RequestError from '../../components/ui/RequestError'
 import { useResource } from '../../lib/api/useResource'
-import { formatPrice, type Product } from './product'
+import ProductGrid from './ProductGrid'
+import type { ProductPage } from './product'
 
 type Category = { id: number; name: string }
-type ProductPage = { items: Product[]; totalPages: number }
 
 export default function MenuPage() {
   const [params, setParams] = useSearchParams()
@@ -30,34 +30,37 @@ export default function MenuPage() {
   }
 
   return (
-    <section className="container-shell page-section">
-      <h1>Our menu</h1>
-      <form
-        key={query}
-        className="flex flex-wrap items-end gap-3"
-        onSubmit={(event) => {
-          event.preventDefault()
-          const value = new FormData(event.currentTarget).get('q')
-          updateFilters({
-            q: typeof value === 'string' ? value.trim() : '',
-            page: '',
-          })
-        }}
-      >
-        <label className="field grow sm:max-w-sm">
-          Search menu
-          <input
-            type="search"
-            name="q"
-            defaultValue={query}
-            maxLength={120}
-            placeholder="Try latte"
-          />
-        </label>
-        <button type="submit" className="button button-primary">
-          Search
-        </button>
-      </form>
+    <section className="container-shell page-section menu-page">
+      <div className="menu-heading">
+        <h1>Our menu</h1>
+        <form
+          key={query}
+          className="menu-search"
+          onSubmit={(event) => {
+            event.preventDefault()
+            const value = new FormData(event.currentTarget).get('q')
+            updateFilters({
+              q: typeof value === 'string' ? value.trim() : '',
+              page: '',
+            })
+          }}
+        >
+          <label className="search-field">
+            <span className="sr-only">Search menu</span>
+            <span className="glyph glyph-search" aria-hidden="true" />
+            <input
+              type="search"
+              name="q"
+              defaultValue={query}
+              maxLength={120}
+              placeholder="Search the menu"
+            />
+          </label>
+          <button type="submit" className="button button-primary">
+            Search
+          </button>
+        </form>
+      </div>
       {categories.resource?.error && (
         <RequestError
           message="Categories are unavailable."
@@ -83,7 +86,12 @@ export default function MenuPage() {
           )}
         </div>
       )}
-      {!products.resource && <p role="status">Loading menu…</p>}
+      <h2 className="sr-only">Products</h2>
+      {!products.resource && (
+        <p className="catalog-status" role="status">
+          Loading menu…
+        </p>
+      )}
       {products.resource?.error && (
         <RequestError
           message="The menu is unavailable right now."
@@ -93,29 +101,12 @@ export default function MenuPage() {
       {products.resource?.data && (
         <>
           {products.resource.data.items.length ? (
-            <ul className="product-grid">
-              {products.resource.data.items.map((product) => (
-                <li key={product.id}>
-                  <Link
-                    className="surface product-card"
-                    to={`/products/${encodeURIComponent(product.slug)}`}
-                    aria-labelledby={`product-${product.id}`}
-                    state={{ menuSearch: params.toString() }}
-                  >
-                    <h2 id={`product-${product.id}`}>
-                      {product.name} <span aria-hidden="true">↗</span>
-                    </h2>
-                    {product.description && <p>{product.description}</p>}
-                    {product.allergens && (
-                      <p className="allergens">Contains {product.allergens}</p>
-                    )}
-                    <p className="product-price">{formatPrice(product)}</p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <ProductGrid
+              products={products.resource.data.items}
+              menuSearch={params.toString()}
+            />
           ) : (
-            <p role="status">
+            <p className="catalog-status" role="status">
               {page > 0
                 ? 'No items on this page.'
                 : 'No items match your search.'}
@@ -128,6 +119,7 @@ export default function MenuPage() {
               aria-label="Menu pages"
             >
               <button
+                type="button"
                 className="button button-outline"
                 disabled={page === 0}
                 onClick={() =>
@@ -137,6 +129,7 @@ export default function MenuPage() {
                 Previous page
               </button>
               <button
+                type="button"
                 className="button button-outline"
                 disabled={page + 1 >= products.resource.data.totalPages}
                 onClick={() => updateFilters({ page: String(page + 1) })}

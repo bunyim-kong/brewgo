@@ -27,6 +27,23 @@ The landing photograph was made with built-in ImageGen and saved as `front-end/s
 - API routes use the unversioned `/api` prefix.
 - Administrators can create, list, update, and disable products through the API. Updates to price or currency are recorded with the administrator who made the change.
 
+## Storefront design
+
+The mobile browsing layout draws inspiration from the [Drinkable coffee shop concept](https://dribbble.com/shots/23149677-Drinkable-Coffee-Shop-App-Design). BrewGo uses burgundy and cream, a compact mobile navigation bar, and live product cards across its home, menu, and product pages.
+
+The updated [WebP photography](../front-end/src/assets/images/) was made with built-in ImageGen. The main iced latte image has desktop and mobile sizes. Five product portraits and a café image fallback share the same lighting and color treatment.
+
+<details>
+<summary>Image generation prompts</summary>
+
+**Hero.** Original BrewGo specialty coffee photography, editorial commercial website hero, horizontal 3:2. A clear short rounded ribbed glass of iced latte with crisp ice and beautiful rich coffee-and-milk marbling on a dark mahogany walnut cafe counter, the glass and beverage dominate the right-center of the full frame. Refined direct afternoon window light hits the glass from upper right, soft atmospheric dark burgundy-brown coffee shop shadows and a softly blurred warm café background. Strong espresso brown and toasted amber highlights, subtle film grain, clean photographic composition, precise glass detail. Leave a little shadowy breathing room along the left edge for blending into a dark burgundy section background. No people, no branding, no lettering, no graphics, no watermark.
+
+**Menu photo sheet.** Single editorial photography contact sheet for six original coffee shop menu assets, a strictly aligned 3-column by 2-row grid of six equally sized square panels with edge-to-edge tiles, no gutters, no dividing strokes and no text. Each tile is an independent photorealistic ecommerce photograph with the object centered and completely inside its own tile, filling 73 percent of height, a soft shadow, warm light and realistic materials. Row 1 left: clear ribbed iced latte glass with ice and marbled milk on pale beige; row 1 middle: ivory ceramic cappuccino cup on a small saucer with centered rosetta art, mostly top-down on pale warm taupe; row 1 right: short dark espresso-colored ceramic Americano cup with deep black coffee and warm shadow on light biscuit beige; row 2 left: clear tumbler of a layered vivid green iced matcha latte centered on muted sage pale gray; row 2 middle: one beautiful golden flaky butter croissant on warm oatmeal parchment with no dish; row 2 right: centered plain oval cream ceramic espresso cup and saucer in softly lit light beige. Polished independent packshots, catalog consistency, natural soft side lighting, slightly elevated front camera angle except cappuccino. No labels, no graphic design, no lettering, no watermarks. Exact 3-column, 2-row layout, subjects need safe clear margins inside every cell.
+
+**Hot matcha latte.** Square original commercial coffee shop catalog photograph, a single cream ceramic cup and saucer of hot matcha latte with vivid muted sage green steamed milk foam and a small creamy white rosetta, slightly elevated top down perspective, centered fully visible cup with breathing space on a matte light muted pale sage gray tabletop, gentle natural side lighting from upper left and polished soft shadow. Warm editorial color grade, simple background, realistic, product filling 74 percent of image. No ice, no glass, no extra garnish, no text, no logos, no watermarks.
+
+</details>
+
 ## Acceptance checklist
 
 | ID | Status | Evidence or remaining work |
@@ -45,7 +62,7 @@ The landing photograph was made with built-in ImageGen and saved as `front-end/s
 | AT-12 | Pending | Require a valid private token on guest tracking endpoints. |
 | AT-13 | Pending | Enforce transitions and commit status history in the same transaction. |
 | AT-14 | Pending | Implement cancellation with reasons and an immutable terminal state. |
-| AT-15 | Partial | Browser checks verified the landing page and menu at 360 px. Full mobile checkout remains pending. |
+| AT-15 | Partial | Browser checks verified home, menu, and product details at 320, 390, 670, 768, and 1440 px. Full mobile checkout remains pending. |
 | AT-16 | Pending | Add SSE, snapshot refresh, and polling fallback. |
 | AT-17 | Partial | Admin API can disable products and the public catalog filters them out. Admin screens and checkout validation remain pending. |
 | AT-18 | Pending | Add reporting based on verified payments. |

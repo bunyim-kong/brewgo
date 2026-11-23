@@ -2,6 +2,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import RequestError from '../../components/ui/RequestError'
 import { useResource } from '../../lib/api/useResource'
 import { formatPrice, type Product } from './product'
+import ProductPhoto from './ProductPhoto'
 
 export default function ProductPage() {
   const { slug = '' } = useParams()
@@ -12,14 +13,18 @@ export default function ProductPage() {
   const product = resource?.data
 
   return (
-    <section className="container-shell page-section max-w-2xl">
+    <section className="container-shell page-section product-page">
       <Link
         className="button button-outline"
         to={{ pathname: '/menu', search: state?.menuSearch ?? '' }}
       >
         <span aria-hidden="true">←</span> Back to menu
       </Link>
-      {!resource && <p role="status">Loading product…</p>}
+      {!resource && (
+        <p className="catalog-status" role="status">
+          Loading product…
+        </p>
+      )}
       {resource?.error?.status === 404 && <h1>Product unavailable</h1>}
       {resource?.error && resource.error.status !== 404 && (
         <RequestError
@@ -28,13 +33,22 @@ export default function ProductPage() {
         />
       )}
       {product && (
-        <article className="surface grid gap-4 p-6 sm:p-8">
-          <h1>{product.name}</h1>
-          {product.description && <p>{product.description}</p>}
-          {product.allergens && (
-            <p className="allergens">Contains {product.allergens}</p>
-          )}
-          <p className="product-price">{formatPrice(product)}</p>
+        <article className="product-detail">
+          <div className="detail-photo">
+            <ProductPhoto product={product} detail />
+          </div>
+          <div className="detail-copy">
+            <h1>{product.name}</h1>
+            <p className="product-price">{formatPrice(product)}</p>
+            {product.description && (
+              <p className="detail-description">{product.description}</p>
+            )}
+            {product.allergens && (
+              <p className="allergens">
+                <strong>Contains</strong> {product.allergens}
+              </p>
+            )}
+          </div>
         </article>
       )}
     </section>

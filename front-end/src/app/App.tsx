@@ -1,41 +1,71 @@
-import { Link, NavLink, Outlet, Route, Routes } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { Link, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import HomePage from './HomePage'
 import MenuPage from '../features/catalog/MenuPage'
 import ProductPage from '../features/catalog/ProductPage'
 import StaffPage from '../features/staff/StaffPage'
 
+const navigation = [
+  { title: 'Home', to: '/', icon: 'home' },
+  { title: 'Menu', to: '/menu', icon: 'menu' },
+  { title: 'Staff', to: '/staff/login', icon: 'staff' },
+] as const
+
 function Layout() {
+  const { pathname } = useLocation()
+  const main = useRef<HTMLElement>(null)
+  const previousPath = useRef(pathname)
+  const destination =
+    pathname === '/'
+      ? '/'
+      : pathname === '/menu' || pathname.startsWith('/products/')
+        ? '/menu'
+        : pathname.startsWith('/staff/') || pathname === '/admin'
+          ? '/staff/login'
+          : undefined
+
+  useEffect(() => {
+    if (previousPath.current === pathname) return
+    previousPath.current = pathname
+    window.scrollTo(0, 0)
+    main.current?.focus({ preventScroll: true })
+  }, [pathname])
+
   return (
     <>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
       <header className="site-header">
-        <div className="container-shell flex min-h-18 items-center justify-between gap-3">
+        <div className="container-shell header-inner">
           <Link className="wordmark" to="/">
-            BrewGo<span>.</span>
+            <span className="brand-mark" aria-hidden="true">
+              <span className="glyph glyph-cup" />
+            </span>
+            <span>
+              BrewGo<span className="wordmark-dot">.</span>
+            </span>
           </Link>
-          <nav
-            aria-label="Main navigation"
-            className="flex items-center gap-2 sm:gap-5"
-          >
-            <NavLink className="nav-link" to="/menu">
-              Menu
-            </NavLink>
-            <NavLink className="nav-link" to="/staff/login">
-              Staff
-            </NavLink>
+          <nav aria-label="Main navigation" className="site-nav">
+            {navigation.map(({ title, to, icon }) => (
+              <Link
+                key={to}
+                className="nav-link"
+                to={to}
+                aria-current={destination === to ? 'page' : undefined}
+              >
+                <span className={`glyph glyph-${icon}`} aria-hidden="true" />
+                {title}
+              </Link>
+            ))}
           </nav>
         </div>
       </header>
-      <main id="main" tabIndex={-1} className="grow">
+      <main ref={main} id="main" tabIndex={-1} className="grow">
         <Outlet />
       </main>
       <footer className="container-shell site-footer">
         <p>BrewGo Coffee Bar</p>
-        <Link className="nav-link" to="/staff/login">
-          Staff sign in
-        </Link>
       </footer>
     </>
   )
