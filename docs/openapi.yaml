@@ -1,0 +1,199 @@
+openapi: 3.1.0
+info:
+  title: BrewGo API
+  version: 0.1.0
+servers:
+  - url: /api/v1
+paths:
+  /branches:
+    get:
+      operationId: listBranches
+      responses:
+        '200':
+          description: Active branches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Branch'
+  /categories:
+    get:
+      operationId: listCategories
+      responses:
+        '200':
+          description: Active categories in menu order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+  /products:
+    get:
+      operationId: listProducts
+      parameters:
+        - name: branchId
+          in: query
+          schema: { type: integer, format: int64, minimum: 1 }
+        - name: categoryId
+          in: query
+          schema: { type: integer, format: int64, minimum: 1 }
+        - name: q
+          in: query
+          description: Case-insensitive search by product name
+          schema: { type: string, maxLength: 120 }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 0, maximum: 100000, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 24 }
+      responses:
+        '200':
+          description: Page of active products in active categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPage'
+        '400':
+          description: Invalid query parameter
+        '404':
+          description: Branch is unavailable
+  /products/{identifier}:
+    get:
+      operationId: getProduct
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          description: Product slug or numeric ID
+          schema: { type: string, maxLength: 180 }
+      responses:
+        '200':
+          description: Details for an active product
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product is unavailable
+  /auth/login:
+    post:
+      operationId: staffLogin
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '204':
+          description: Signed in and session cookie issued
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Invalid or missing CSRF token
+  /auth/me:
+    get:
+      operationId: getStaffSession
+      description: Obtain a fresh CSRF token and check the current staff session.
+      responses:
+        '200':
+          description: Signed-in staff profile
+          headers:
+            X-CSRF-TOKEN:
+              $ref: '#/components/headers/Csrf'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+        '401':
+          description: Staff sign-in required. A session cookie is issued for the CSRF token.
+          headers:
+            X-CSRF-TOKEN:
+              $ref: '#/components/headers/Csrf'
+  /auth/logout:
+    post:
+      operationId: staffLogout
+      security:
+        - staffSession: []
+      parameters:
+        - $ref: '#/components/parameters/Csrf'
+      responses:
+        '204':
+          description: Session invalidated
+        '403':
+          description: Invalid or missing CSRF token
+components:
+  securitySchemes:
+    staffSession:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+  headers:
+    Csrf:
+      description: Send this value in X-CSRF-TOKEN for the next staff session mutation.
+      schema: { type: string }
+  parameters:
+    Csrf:
+      name: X-CSRF-TOKEN
+      in: header
+      required: true
+      schema: { type: string }
+  schemas:
+    Branch:
+      type: object
+      required: [id, name, slug, timezone, address, payOnPickup]
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        slug: { type: string }
+        timezone: { type: string }
+        address: { type: [string, 'null'] }
+        payOnPickup: { type: boolean }
+    Category:
+      type: object
+      required: [id, name, slug]
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        slug: { type: string }
+    Product:
+      type: object
+      required: [id, categoryId, name, slug, description, allergens, imageUrl, basePrice, currency]
+      properties:
+        id: { type: integer, format: int64 }
+        categoryId: { type: integer, format: int64 }
+        name: { type: string }
+        slug: { type: string }
+        description: { type: [string, 'null'] }
+        allergens: { type: [string, 'null'] }
+        imageUrl: { type: [string, 'null'] }
+        basePrice: { type: string, example: '2.50' }
+        currency: { type: string, example: USD }
+    ProductPage:
+      type: object
+      required: [items, page, totalPages, totalItems]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        page: { type: integer }
+        totalPages: { type: integer }
+        totalItems: { type: integer, format: int64 }
+    Staff:
+      type: object
+      required: [id, name, role, branchId]
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        role: { type: string, enum: [ADMIN, CASHIER, BARISTA] }
+        branchId: { type: [integer, 'null'], format: int64 }
